@@ -1,0 +1,16 @@
+<!-- Adapted from shadcn/ui under MIT. See vibecn.LICENSE. -->
+<script setup lang="ts">
+import type { ClassValue } from '@usevibejs/ui';
+import { cn } from '../../lib/utils.ts';
+
+defineOptions({ inheritAttrs: false });
+
+const { class: className } = defineProps<{
+  class?: ClassValue;
+}>();
+defineSlots<{ default?: (props: {}) => unknown }>();
+</script>
+
+<template>
+  <tfoot data-slot="table-footer" v-bind="$attrs" :class="cn('border-t bg-muted/50 font-medium [&>tr]:last:border-b-0', className)"><slot /></tfoot>
+</template>

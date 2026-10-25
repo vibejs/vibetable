@@ -1,0 +1,48 @@
+<script setup lang="ts">
+import type { DataTableInstance } from '../../lib/data-table.ts';
+import Input from './Input.vibe';
+import Button from './Button.vibe';
+import DataTableViewOptions from './DataTableViewOptions.vibe';
+const {
+  table,
+  placeholder = 'Search records...',
+  label = 'Search records',
+} = defineProps<{ table: DataTableInstance; placeholder?: string; label?: string }>();
+defineSlots<{ filters?: (props: {}) => unknown; actions?: (props: {}) => unknown }>();
+</script>
+<template>
+  <div role="group" aria-label="Table controls" class="flex flex-wrap items-center gap-2">
+    <div class="relative w-full sm:w-64">
+      <svg
+        aria-hidden="true"
+        viewBox="0 0 16 16"
+        class="pointer-events-none absolute top-2.5 left-3 size-3.5 text-muted-foreground"
+        fill="none"
+        stroke="currentColor"
+      >
+        <circle cx="7" cy="7" r="4.5" />
+        <path d="m10.5 10.5 3 3" /></svg
+      ><Input
+        type="search"
+        :model-value="String(table.atoms.globalFilter?.get() ?? '')"
+        :placeholder="placeholder"
+        :aria-label="label"
+        class="h-9 pl-9"
+        @update:model-value="table.setGlobalFilter?.($event)"
+      />
+    </div>
+    <slot name="filters" /><Button
+      v-if="table.atoms.globalFilter?.get() || table.atoms.columnFilters?.get().length"
+      variant="ghost"
+      size="sm"
+      @click="
+        table.setGlobalFilter?.('');
+        table.resetColumnFilters?.();
+      "
+      >Reset<span class="sr-only"> filters</span></Button
+    >
+    <div class="ml-auto flex items-center gap-2">
+      <slot name="actions" /><DataTableViewOptions :table="table" />
+    </div>
+  </div>
+</template>

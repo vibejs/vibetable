@@ -1,0 +1,10 @@
+<script setup lang="ts">
+import type { HeaderContext } from '../../src/index.ts';
+import type { Features, Item } from './types.ts';
+const { context } = defineProps<{ context: HeaderContext<Features, Item, string> }>();
+</script>
+<template>
+  <button type="button" @click="context.column.toggleSorting()">
+    Customer {{ context.column.getIsSorted() || '' }}
+  </button>
+</template>

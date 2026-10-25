@@ -1,0 +1,19 @@
+<script setup lang="ts">
+import TableRow from './TableRow.vibe';
+import TableCell from './TableCell.vibe';
+const {
+  columns,
+  title = 'No results',
+  description = 'Try changing your search or filters.',
+} = defineProps<{ columns: number; title?: string; description?: string }>();
+defineSlots<{ default?: (props: {}) => unknown }>();
+</script>
+<template>
+  <TableRow
+    ><TableCell :colspan="Math.max(1, columns)" class="h-48 text-center"
+      ><div class="mx-auto max-w-xs space-y-2 py-8">
+        <p class="font-medium">{{ title }}</p>
+        <p class="text-sm text-muted-foreground">{{ description }}</p>
+        <slot /></div></TableCell
+  ></TableRow>
+</template>

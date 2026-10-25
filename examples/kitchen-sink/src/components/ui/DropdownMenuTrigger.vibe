@@ -1,0 +1,55 @@
+<!-- Adapted from shadcn/ui under MIT. See vibecn.LICENSE. -->
+<script setup lang="ts">
+import type { ClassValue } from '@usevibejs/ui';
+import { injectMenu } from '../../lib/menu.ts';
+import Button from './Button.vibe';
+
+defineOptions({ inheritAttrs: false });
+
+const {
+  class: className,
+  variant = 'default',
+  size = 'default',
+  disabled = false,
+} = defineProps<{
+  class?: ClassValue;
+  variant?: 'default' | 'secondary' | 'destructive' | 'outline' | 'ghost' | 'link';
+  size?: 'default' | 'xs' | 'sm' | 'lg' | 'icon' | 'icon-xs' | 'icon-sm' | 'icon-lg';
+  disabled?: boolean;
+}>();
+defineSlots<{ default?: (props: {}) => unknown }>();
+const emit = defineEmits<{ click: [event: MouseEvent]; keydown: [event: KeyboardEvent] }>();
+const menu = injectMenu();
+
+// popovertarget toggles the menu; a click from the keyboard (detail 0) focuses the first item.
+function onClick(event: MouseEvent): void {
+  emit('click', event);
+  menu.focusOnOpen.value = event.detail === 0 ? 'first' : 'content';
+}
+function onKeydown(event: KeyboardEvent): void {
+  emit('keydown', event);
+  if (event.key !== 'ArrowDown' && event.key !== 'ArrowUp') return;
+  event.preventDefault();
+  menu.focusOnOpen.value = event.key === 'ArrowDown' ? 'first' : 'last';
+  menu.open.value = true;
+}
+</script>
+
+<template>
+  <Button
+    data-slot="dropdown-menu-trigger"
+    aria-haspopup="menu"
+    :aria-expanded="menu.open.value"
+    :aria-controls="menu.id + '-content'"
+    :data-state="menu.open.value ? 'open' : 'closed'"
+    :data-anchor="menu.id"
+    :popovertarget="menu.id + '-content'"
+    :variant="variant"
+    :size="size"
+    :disabled="disabled"
+    v-bind="$attrs"
+    :class="className"
+    @click="onClick"
+    @keydown="onKeydown"
+  ><slot /></Button>
+</template>

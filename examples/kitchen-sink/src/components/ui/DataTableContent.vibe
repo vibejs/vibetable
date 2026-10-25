@@ -1,0 +1,19 @@
+<script setup lang="ts">
+import { computed } from '@usevibejs/ui';
+import { isComponentContent, renderContent } from '@usevibejs/table';
+import type { TextContent } from '@usevibejs/table';
+import type { DataTableTemplate } from '../../lib/data-table.ts';
+defineOptions({ inheritAttrs: false });
+const props = defineProps<{ template?: DataTableTemplate; context: object }>();
+const content = computed(() =>
+  renderContent(props.template as TextContent | ((context: object) => unknown), props.context),
+);
+</script>
+<template>
+  <component
+    v-if="isComponentContent(content)"
+    :is="content.component"
+    :context="content.context"
+  />
+  <template v-else>{{ content }}</template>
+</template>

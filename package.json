@@ -40,7 +40,8 @@
     "dev": "pnpm --dir examples/kitchen-sink dev",
     "precheck": "pnpm build",
     "build:examples": "pnpm --dir examples/kitchen-sink build",
-    "bench:browser": "vitest run --project integration test/browser.integration.test.ts -t 'bounds DOM rows'"
+    "bench:browser": "vitest run --project integration test/browser.integration.test.ts -t 'bounds DOM rows'",
+    "prepack": "pnpm build"
   },
   "dependencies": {
     "@tanstack/store": "catalog:",

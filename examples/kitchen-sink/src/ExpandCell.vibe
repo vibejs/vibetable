@@ -1,0 +1,20 @@
+<script setup lang="ts">
+import type { CellContext } from '@usevibejs/table';
+import type { Features } from './shared.ts';
+import type { RecordItem } from './records.ts';
+const { context } = defineProps<{ context: CellContext<Features, RecordItem, string> }>();
+</script>
+<template>
+  <div :style="{ paddingLeft: context.row.depth * 20 + 'px' }" class="flex items-center gap-2">
+    <button
+      v-if="context.row.getCanExpand()"
+      type="button"
+      :aria-expanded="context.row.getIsExpanded()"
+      :aria-label="'Expand ' + context.row.original.name"
+      class="size-6 rounded border outline-none focus-visible:ring-2 focus-visible:ring-ring"
+      @click="context.row.toggleExpanded()"
+    >
+      {{ context.row.getIsExpanded() ? '−' : '+' }}</button
+    >{{ context.getValue() }}
+  </div>
+</template>

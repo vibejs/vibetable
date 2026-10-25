@@ -1,0 +1,206 @@
+<script setup lang="ts">
+import { computed, onScopeDispose } from '@usevibejs/ui';
+import type { ClassValue } from '@usevibejs/ui';
+import type {
+  DataTableCell,
+  DataTableColumn,
+  DataTableHeader,
+  DataTableInstance,
+  DataTableRow,
+} from '../../lib/data-table.ts';
+import { cn } from '../../lib/utils.ts';
+import Table from './Table.vibe';
+import TableHeader from './TableHeader.vibe';
+import TableBody from './TableBody.vibe';
+import TableRow from './TableRow.vibe';
+import TableHead from './TableHead.vibe';
+import TableCell from './TableCell.vibe';
+import TableCaption from './TableCaption.vibe';
+import DataTableContent from './DataTableContent.vibe';
+import DataTableColumnHeader from './DataTableColumnHeader.vibe';
+import DataTableEmptyState from './DataTableEmptyState.vibe';
+import DataTableLoadingState from './DataTableLoadingState.vibe';
+const {
+  table,
+  caption,
+  loading = false,
+  error,
+  density = 'comfortable',
+  class: className,
+} = defineProps<{
+  table: DataTableInstance;
+  caption: string;
+  loading?: boolean;
+  error?: string | null;
+  density?: 'compact' | 'comfortable';
+  class?: ClassValue;
+}>();
+defineSlots<{
+  header?: (props: { header: DataTableHeader }) => unknown;
+  cell?: (props: { cell: DataTableCell; row: DataTableRow }) => unknown;
+  empty?: (props: {}) => unknown;
+  error?: (props: {}) => unknown;
+}>();
+const count = computed(() => (table.getVisibleLeafColumns?.() ?? table.getAllLeafColumns()).length);
+// Core accepts an injected document. End an active drag through its own terminal handler
+// when this component leaves, so Core removes its listeners and cancels pending animation work.
+let finishResize: (() => void) | undefined;
+onScopeDispose(() => finishResize?.());
+function startResize(header: DataTableHeader, event: MouseEvent | TouchEvent): void {
+  finishResize?.();
+  const owner = (event.currentTarget as HTMLElement).ownerDocument;
+  let terminal: { type: string; listener: EventListenerOrEventListenerObject } | undefined;
+  const context = new Proxy(owner, {
+    get(target, key) {
+      if (key === 'addEventListener')
+        return (
+          type: string,
+          listener: EventListenerOrEventListenerObject,
+          options?: boolean | AddEventListenerOptions,
+        ): void => {
+          if (type === 'mouseup' || type === 'touchcancel') {
+            terminal = { type, listener };
+            finishResize = () => {
+              const end = terminal;
+              if (!end) return;
+              // A generic end event has no clientX: Core commits its latest observed offset.
+              if (typeof end.listener === 'function') end.listener(new Event(end.type));
+              else end.listener.handleEvent(new Event(end.type));
+            };
+          }
+          target.addEventListener(type, listener, options);
+        };
+      if (key === 'removeEventListener')
+        return (
+          type: string,
+          listener: EventListenerOrEventListenerObject,
+          options?: boolean | EventListenerOptions,
+        ): void => {
+          target.removeEventListener(type, listener, options);
+          if (terminal?.type === type && terminal.listener === listener) {
+            terminal = undefined;
+            finishResize = undefined;
+          }
+        };
+      const value: unknown = Reflect.get(target, key, target);
+      return typeof value === 'function' ? value.bind(target) : value;
+    },
+  });
+  header.getResizeHandler?.(context)(event);
+}
+function resize(column: DataTableColumn, event: KeyboardEvent): void {
+  if (event.key !== 'ArrowLeft' && event.key !== 'ArrowRight') return;
+  event.preventDefault();
+  const size = Math.min(
+    column.columnDef.maxSize ?? 1000,
+    Math.max(
+      column.columnDef.minSize ?? 40,
+      (column.getSize?.() ?? 150) + (event.key === 'ArrowRight' ? 10 : -10),
+    ),
+  );
+  table.setColumnSizing?.((previous) => ({ ...previous, [column.id]: size }));
+}
+</script>
+<template>
+  <div
+    data-slot="data-table"
+    :data-density="density"
+    :aria-busy="loading"
+    :class="
+      cn(
+        'overflow-hidden rounded-lg border bg-background [&_[data-slot=table-container]]:max-h-[32rem] [&_[data-slot=table-container]]:overflow-auto',
+        density === 'compact' ? '[&_td]:py-1.5' : '[&_td]:py-3',
+        className,
+      )
+    "
+  >
+    <Table
+      :aria-rowcount="
+        table.getRowCount ? table.getRowCount() + table.getHeaderGroups().length : undefined
+      "
+    >
+      <TableCaption class="sr-only">{{ caption }}</TableCaption>
+      <TableHeader class="sticky top-0 z-10 bg-muted/70 backdrop-blur-sm">
+        <TableRow v-for="group in table.getHeaderGroups()" :key="group.id">
+          <TableHead
+            v-for="header in group.headers"
+            :key="header.id"
+            :scope="header.colSpan > 1 ? 'colgroup' : 'col'"
+            :colspan="header.colSpan"
+            :rowspan="header.rowSpan || 1"
+            :aria-sort="
+              header.column.getIsSorted?.() === 'asc'
+                ? 'ascending'
+                : header.column.getIsSorted?.() === 'desc'
+                  ? 'descending'
+                  : undefined
+            "
+            :style="{ width: header.column.getSize ? header.column.getSize() + 'px' : undefined }"
+            class="relative h-11 px-4 text-xs text-muted-foreground"
+          >
+            <template v-if="!header.isPlaceholder"
+              ><slot name="header" :header="header"
+                ><DataTableColumnHeader
+                  v-if="typeof header.column.columnDef.header === 'string'"
+                  :column="header.column"
+                  :title="header.column.columnDef.header" /><DataTableContent
+                  v-else
+                  :template="header.column.columnDef.header"
+                  :context="header.getContext()" /></slot
+            ></template>
+            <span
+              v-if="header.column.getCanResize?.()"
+              role="separator"
+              aria-orientation="vertical"
+              tabindex="0"
+              :aria-label="'Resize ' + header.column.id"
+              :aria-valuenow="header.column.getSize?.()"
+              :aria-valuemin="header.column.columnDef.minSize ?? 40"
+              :aria-valuemax="header.column.columnDef.maxSize ?? 1000"
+              class="absolute inset-y-2 right-0 w-1 cursor-col-resize rounded bg-border opacity-0 hover:bg-ring focus-visible:opacity-100 focus-visible:outline-2 focus-visible:outline-ring [th:hover_&]:opacity-100"
+              @mousedown="startResize(header, $event)"
+              @touchstart="startResize(header, $event)"
+              @keydown="resize(header.column, $event)"
+            />
+          </TableHead>
+        </TableRow>
+      </TableHeader>
+      <TableBody>
+        <DataTableLoadingState v-if="loading" :columns="count" />
+        <TableRow v-else-if="error"
+          ><TableCell :colspan="Math.max(1, count)" class="h-40 text-center"
+            ><div role="alert" class="space-y-2">
+              <p class="font-medium text-destructive">{{ error }}</p>
+              <slot name="error" /></div></TableCell
+        ></TableRow>
+        <template v-else>
+          <TableRow
+            v-for="row in table.getRowModel().rows"
+            :key="row.id"
+            :data-row-id="row.id"
+            :data-state="row.getIsSelected?.() ? 'selected' : undefined"
+            class="transition-colors"
+          >
+            <TableCell
+              v-for="cell in row.getVisibleCells?.() ?? row.getAllCells()"
+              :key="cell.id"
+              class="px-4 align-middle"
+              ><slot name="cell" :cell="cell" :row="row"
+                ><DataTableContent
+                  v-if="!cell.getIsPlaceholder?.()"
+                  :template="
+                    cell.getIsAggregated?.()
+                      ? (cell.column.columnDef.aggregatedCell ?? cell.column.columnDef.cell)
+                      : cell.column.columnDef.cell
+                  "
+                  :context="cell.getContext()" /></slot
+            ></TableCell>
+          </TableRow>
+          <DataTableEmptyState v-if="!table.getRowModel().rows.length" :columns="count"
+            ><slot name="empty"
+          /></DataTableEmptyState>
+        </template>
+      </TableBody>
+    </Table>
+  </div>
+</template>

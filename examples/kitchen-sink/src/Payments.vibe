@@ -1,0 +1,190 @@
+<script setup lang="ts">
+import { computed, ref, shallowRef } from '@usevibejs/ui';
+import { componentRenderer, useTable } from '@usevibejs/table';
+import Button from '@/components/ui/Button.vibe';
+import DataTable from '@/components/ui/DataTable.vibe';
+import DataTableToolbar from '@/components/ui/DataTableToolbar.vibe';
+import DataTablePagination from '@/components/ui/DataTablePagination.vibe';
+import DataTableFacetedFilter from '@/components/ui/DataTableFacetedFilter.vibe';
+import DataTableSelectionActions from '@/components/ui/DataTableSelectionActions.vibe';
+import SelectionHeader from './payments/SelectionHeader.vibe';
+import SelectionCell from './payments/SelectionCell.vibe';
+import CustomerCell from './payments/CustomerCell.vibe';
+import StatusCell from './payments/StatusCell.vibe';
+import AmountCell from './payments/AmountCell.vibe';
+import ActionsCell from './payments/ActionsCell.vibe';
+import {
+  initialPayments,
+  paymentColumns as helper,
+  paymentFeatures,
+  formatMoney,
+} from './payments/model.ts';
+const rows = shallowRef(initialPayments);
+const density = ref<'compact' | 'comfortable'>('comfortable');
+const feedback = ref('');
+const columns = helper.columns([
+  helper.display({
+    id: 'select',
+    size: 48,
+    minSize: 48,
+    maxSize: 48,
+    enableHiding: false,
+    enableResizing: false,
+    header: componentRenderer(SelectionHeader),
+    cell: componentRenderer(SelectionCell),
+  }),
+  helper.accessor('id', { header: 'Payment', size: 125, cell: (context) => context.getValue() }),
+  helper.accessor('email', {
+    header: 'Customer',
+    size: 260,
+    sortFn: 'text',
+    filterFn: 'includesString',
+    cell: componentRenderer(CustomerCell),
+  }),
+  helper.accessor('status', {
+    header: 'Status',
+    size: 140,
+    cell: componentRenderer(StatusCell),
+    filterFn: (row, id, values: string[]) => values.includes(row.getValue<string>(id)),
+  }),
+  helper.accessor('amount', {
+    header: 'Amount',
+    size: 140,
+    sortFn: 'basic',
+    cell: componentRenderer(AmountCell),
+  }),
+  helper.accessor('date', {
+    header: 'Date',
+    size: 145,
+    sortFn: 'datetime',
+    cell: (context) =>
+      new Intl.DateTimeFormat('en-US', {
+        month: 'short',
+        day: 'numeric',
+        year: 'numeric',
+        timeZone: 'UTC',
+      }).format(context.getValue()),
+  }),
+  helper.display({
+    id: 'actions',
+    header: 'Actions',
+    size: 70,
+    enableHiding: false,
+    enableResizing: false,
+    cell: componentRenderer(ActionsCell),
+  }),
+]);
+function updateStatus(ids: string[], status: 'Paid' | 'Refunded'): void {
+  rows.value = rows.value.map((row) => (ids.includes(row.id) ? { ...row, status } : row));
+  feedback.value = `${ids.length} payment${ids.length === 1 ? '' : 's'} ${status === 'Paid' ? 'marked as paid' : 'refunded'}.`;
+}
+const table = useTable({
+  features: paymentFeatures,
+  data: rows,
+  columns,
+  getRowId: (row) => row.id,
+  columnResizeMode: 'onEnd',
+  initialState: { pagination: { pageIndex: 0, pageSize: 5 } },
+  meta: {
+    markPaid: (id) => updateStatus([id], 'Paid'),
+    refund: (id) => updateStatus([id], 'Refunded'),
+    remove: (id) => {
+      rows.value = rows.value.filter((row) => row.id !== id);
+      table.resetRowSelection();
+      feedback.value = `${id} removed.`;
+    },
+  },
+});
+const paid = computed(() => rows.value.filter((row) => row.status === 'Paid'));
+const total = computed(() => paid.value.reduce((sum, row) => sum + row.amount, 0));
+const csv = computed(
+  () =>
+    'data:text/csv;charset=utf-8,' +
+    encodeURIComponent(
+      [
+        'ID,Customer,Status,Amount',
+        ...table
+          .getFilteredRowModel()
+          .rows.map((row) =>
+            [row.original.id, row.original.email, row.original.status, row.original.amount].join(
+              ',',
+            ),
+          ),
+      ].join('\n'),
+    ),
+);
+function markSelected(): void {
+  updateStatus(table.getSelectedRowIds(), 'Paid');
+  table.resetRowSelection();
+}
+</script>
+<template>
+  <section aria-label="Payments dashboard" class="w-full min-w-0 space-y-5">
+    <div class="flex flex-wrap items-start justify-between gap-4">
+      <div>
+        <div class="mb-1 flex items-center gap-2">
+          <h2 class="text-lg font-semibold tracking-tight">Payments</h2>
+          <span
+            class="rounded-md border bg-muted px-1.5 py-0.5 font-mono text-[10px] text-muted-foreground"
+            >{{ rows.length }}</span
+          >
+        </div>
+        <p class="text-sm text-muted-foreground">A clear view of every customer payment.</p>
+      </div>
+      <a
+        :href="csv"
+        download="payments.csv"
+        class="inline-flex h-8 items-center gap-2 rounded-md border bg-background px-3 text-xs font-medium shadow-xs outline-none hover:bg-accent focus-visible:ring-2 focus-visible:ring-ring"
+        >↓ Export payments</a
+      >
+    </div>
+    <div class="grid grid-cols-1 gap-3 sm:grid-cols-3">
+      <div class="rounded-lg border bg-muted/20 px-4 py-3">
+        <p class="text-xs text-muted-foreground">Collected</p>
+        <p class="mt-1 font-mono text-xl font-semibold tracking-tight tabular-nums">
+          {{ formatMoney(total) }}
+        </p>
+      </div>
+      <div class="rounded-lg border bg-muted/20 px-4 py-3">
+        <p class="text-xs text-muted-foreground">Successful payments</p>
+        <p class="mt-1 font-mono text-xl font-semibold tabular-nums">
+          {{ paid.length
+          }}<span class="ml-2 font-sans text-xs font-normal text-muted-foreground"
+            >of {{ rows.length }} payments</span
+          >
+        </p>
+      </div>
+      <div class="rounded-lg border bg-muted/20 px-4 py-3">
+        <p class="text-xs text-muted-foreground">Processing</p>
+        <p class="mt-1 font-mono text-xl font-semibold tabular-nums">
+          {{ rows.filter((row) => row.status === 'Processing').length }}
+        </p>
+      </div>
+    </div>
+    <DataTableToolbar :table="table" placeholder="Search payments..." label="Search payments"
+      ><template #filters
+        ><DataTableFacetedFilter
+          :column="table.getColumn('status')!"
+          title="Status"
+          :options="
+            ['Paid', 'Processing', 'Failed', 'Refunded'].map((value) => ({ value, label: value }))
+          " /></template
+      ><template #actions
+        ><Button
+          variant="ghost"
+          size="sm"
+          @click="density = density === 'compact' ? 'comfortable' : 'compact'"
+          >{{ density === 'compact' ? 'Comfortable rows' : 'Compact rows' }}</Button
+        ></template
+      ></DataTableToolbar
+    >
+    <DataTableSelectionActions :table="table"
+      ><Button variant="outline" size="sm" @click="markSelected"
+        >Mark as paid</Button
+      ></DataTableSelectionActions
+    >
+    <DataTable :table="table" caption="Customer payments" :density="density" />
+    <DataTablePagination :table="table" :page-sizes="[5, 10, 20, 50]" />
+    <p v-if="feedback" role="status" class="text-xs text-muted-foreground">{{ feedback }}</p>
+  </section>
+</template>

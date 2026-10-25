@@ -1,0 +1,61 @@
+<script setup lang="ts">
+import { computed } from '@usevibejs/ui';
+import { useTable } from '@usevibejs/table';
+import DataTable from './components/ui/DataTable.vibe';
+import DataTableToolbar from './components/ui/DataTableToolbar.vibe';
+import DataTableFacetedFilter from './components/ui/DataTableFacetedFilter.vibe';
+import DataTablePagination from './components/ui/DataTablePagination.vibe';
+import { features, helper } from './shared.ts';
+import { records } from './records.ts';
+const columns = helper.columns([
+  helper.accessor('name', { header: 'Product', filterFn: 'includesString' }),
+  helper.accessor('category', {
+    header: 'Category',
+    filterFn: (row, id, values: string[]) => values.includes(row.getValue<string>(id)),
+  }),
+  helper.accessor('amount', {
+    header: 'Price',
+    filterFn: 'inNumberRange',
+    cell: (context) => '$' + context.getValue().toFixed(2),
+  }),
+  helper.accessor('quantity', { header: 'In stock' }),
+]);
+const table = useTable({
+  features,
+  data: records.map((row, index) => ({
+    ...row,
+    name: ['Cloud workspace', 'Display stand', 'Design review'][index % 3] + ' ' + (index + 1),
+  })),
+  columns,
+  initialState: { pagination: { pageIndex: 0, pageSize: 10 } },
+});
+const minimumPrice = computed(() => {
+  const value = table.getColumn('amount')!.getFilterValue();
+  return Array.isArray(value) && typeof value[0] === 'number' ? String(value[0]) : '';
+});
+function setMinimumPrice(event: Event): void {
+  const value = (event.target as HTMLInputElement).value;
+  table.getColumn('amount')!.setFilterValue(value === '' ? undefined : [Number(value), Infinity]);
+}
+</script>
+<template>
+  <section class="space-y-4">
+    <h2 class="text-xl font-semibold">Product catalog</h2>
+    <DataTableToolbar :table="table" label="Search products" placeholder="Search products..."
+      ><template #filters
+        ><DataTableFacetedFilter
+          :column="table.getColumn('category')!"
+          title="Category"
+          :options="
+            ['Software', 'Hardware', 'Services'].map((value) => ({ label: value, value }))
+          " /><label class="flex items-center gap-2 text-xs"
+          >Minimum price<input
+            type="number"
+            min="0"
+            aria-label="Minimum price"
+            :value="minimumPrice"
+            class="h-8 w-24 rounded border px-2"
+            @input="setMinimumPrice" /></label></template></DataTableToolbar
+    ><DataTable :table="table" caption="Products and stock" /><DataTablePagination :table="table" />
+  </section>
+</template>

@@ -1,0 +1,61 @@
+<!-- Adapted from shadcn/ui under MIT. See vibecn.LICENSE. -->
+<script setup lang="ts">
+import type { ClassValue } from '@usevibejs/ui';
+import { logicalKey } from '../../lib/collection.ts';
+import { injectMenu } from '../../lib/menu.ts';
+import { cn } from '../../lib/utils.ts';
+
+defineOptions({ inheritAttrs: false });
+
+const { class: className, inset = false, disabled = false } = defineProps<{
+  class?: ClassValue;
+  inset?: boolean;
+  disabled?: boolean;
+}>();
+defineSlots<{ default?: (props: {}) => unknown }>();
+const sub = injectMenu();
+
+function open(focus: 'first' | 'content'): void {
+  if (disabled) return;
+  sub.focusOnOpen.value = focus;
+  sub.open.value = true;
+}
+function onPointerMove(event: PointerEvent): void {
+  if (disabled) return;
+  (event.currentTarget as HTMLElement).focus();
+  if (!sub.open.value) open('content');
+}
+function onKeydown(event: KeyboardEvent): void {
+  const key = logicalKey(event.key, event.currentTarget as Element);
+  if (key !== 'ArrowRight' && key !== 'Enter' && key !== ' ') return;
+  event.preventDefault();
+  event.stopPropagation();
+  open('first');
+}
+const base =
+  "relative flex cursor-default items-center gap-2 rounded-sm text-sm outline-hidden select-none focus:bg-accent focus:text-accent-foreground data-[disabled]:pointer-events-none data-[disabled]:opacity-50 [&_svg]:pointer-events-none [&_svg]:shrink-0 [&_svg:not([class*='size-'])]:size-4 px-2 py-1.5 data-[inset]:pl-8 data-[state=open]:bg-accent data-[state=open]:text-accent-foreground [&_svg:not([class*='text-'])]:text-muted-foreground";
+</script>
+
+<template>
+  <div
+    role="menuitem"
+    tabindex="-1"
+    aria-haspopup="menu"
+    data-slot="dropdown-menu-sub-trigger"
+    :aria-expanded="sub.open.value"
+    :aria-controls="sub.id + '-content'"
+    :data-state="sub.open.value ? 'open' : 'closed'"
+    :data-anchor="sub.id"
+    :data-inset="inset || undefined"
+    :data-disabled="disabled || undefined"
+    :aria-disabled="disabled || undefined"
+    v-bind="$attrs"
+    :class="cn(base, className)"
+    @pointermove="onPointerMove"
+    @keydown="onKeydown"
+    @click="open('first')"
+  >
+    <slot />
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" class="ml-auto size-4"><path d="m9 18 6-6-6-6" /></svg>
+  </div>
+</template>

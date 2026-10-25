@@ -1,0 +1,15 @@
+<!-- Adapted from shadcn/ui under MIT. See vibecn.LICENSE. -->
+<script setup lang="ts">
+import type { ClassValue } from '@usevibejs/ui';
+import { cn } from '../../lib/utils.ts';
+
+defineOptions({ inheritAttrs: false });
+
+const { class: className } = defineProps<{
+  class?: ClassValue;
+}>();
+</script>
+
+<template>
+  <div data-slot="dropdown-menu-separator" role="separator" v-bind="$attrs" :class="cn('-mx-1 my-1 h-px bg-border', className)" />
+</template>

@@ -1,0 +1,55 @@
+<script setup lang="ts">
+import { computed } from '@usevibejs/ui';
+import type { DataTableColumn } from '../../lib/data-table.ts';
+import DropdownMenu from './DropdownMenu.vibe';
+import DropdownMenuTrigger from './DropdownMenuTrigger.vibe';
+import DropdownMenuContent from './DropdownMenuContent.vibe';
+import DropdownMenuCheckboxItem from './DropdownMenuCheckboxItem.vibe';
+import DropdownMenuItem from './DropdownMenuItem.vibe';
+import DropdownMenuSeparator from './DropdownMenuSeparator.vibe';
+const { column, title, options } = defineProps<{
+  column: DataTableColumn;
+  title: string;
+  options: { label: string; value: string }[];
+}>();
+const selected = computed<string[]>(() => {
+  const value = column.getFilterValue?.();
+  return Array.isArray(value) ? (value as string[]) : [];
+});
+function toggle(value: string): void {
+  const next = selected.value.includes(value)
+    ? selected.value.filter((item) => item !== value)
+    : [...selected.value, value];
+  column.setFilterValue?.(next.length ? next : undefined);
+}
+</script>
+<template>
+  <DropdownMenu
+    ><DropdownMenuTrigger variant="outline" size="sm" class="border-dashed"
+      >+ {{ title
+      }}<span
+        v-if="selected.length"
+        class="ml-1 rounded bg-secondary px-1.5 text-xs tabular-nums"
+        >{{ selected.length }}</span
+      ></DropdownMenuTrigger
+    ><DropdownMenuContent align="start" :aria-label="'Filter by ' + title"
+      ><DropdownMenuCheckboxItem
+        v-for="option in options"
+        :key="option.value"
+        :checked="selected.includes(option.value)"
+        @update:checked="toggle(option.value)"
+        @select="$event.preventDefault()"
+        ><span>{{ option.label }}</span
+        ><span
+          v-if="column.getFacetedUniqueValues"
+          class="ml-auto pl-4 text-xs text-muted-foreground tabular-nums"
+          >{{ column.getFacetedUniqueValues().get(option.value) ?? 0 }}</span
+        ></DropdownMenuCheckboxItem
+      ><template v-if="selected.length"
+        ><DropdownMenuSeparator /><DropdownMenuItem @select="column.setFilterValue?.(undefined)"
+          >Clear filters</DropdownMenuItem
+        ></template
+      ></DropdownMenuContent
+    ></DropdownMenu
+  >
+</template>

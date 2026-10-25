@@ -1,0 +1,43 @@
+<script setup lang="ts">
+import { useTable } from '@usevibejs/table';
+import DataTable from './components/ui/DataTable.vibe';
+import DataTableViewOptions from './components/ui/DataTableViewOptions.vibe';
+import Button from './components/ui/Button.vibe';
+import { features, columns } from './shared.ts';
+import { records } from './records.ts';
+const table = useTable({
+  features,
+  data: records.slice(0, 6),
+  columns,
+  columnResizeMode: 'onChange',
+});
+</script>
+<template>
+  <section class="space-y-4">
+    <h2 class="text-xl font-semibold">Make room for what matters</h2>
+    <p class="text-sm text-muted-foreground">
+      Drag a header separator to resize, or focus it and use the arrow keys. Reorder or hide columns
+      with the controls.
+    </p>
+    <div class="flex gap-2">
+      <Button
+        variant="outline"
+        size="sm"
+        @click="
+          table.setColumnOrder([...table.getAllLeafColumns()].reverse().map((column) => column.id))
+        "
+        >Reverse columns</Button
+      ><Button
+        variant="ghost"
+        size="sm"
+        @click="
+          table.resetColumnSizing();
+          table.resetColumnOrder();
+          table.resetColumnVisibility();
+        "
+        >Reset layout</Button
+      ><DataTableViewOptions :table="table" />
+    </div>
+    <DataTable :table="table" caption="Configurable invoice columns" />
+  </section>
+</template>

@@ -1,0 +1,140 @@
+<script setup lang="ts">
+import {
+  computed,
+  onMounted,
+  onScopeDispose,
+  ref,
+  shallowRef,
+  useTemplateRef,
+} from '@usevibejs/ui';
+import {
+  Virtualizer,
+  elementScroll,
+  observeElementOffset,
+  observeElementRect,
+} from '@tanstack/virtual-core';
+import type { VirtualItem } from '@tanstack/virtual-core';
+import { tableFeatures, useTable, rowSelectionFeature } from '@usevibejs/table';
+import { createRecords } from './records.ts';
+import Button from './components/ui/Button.vibe';
+import Checkbox from './components/ui/Checkbox.vibe';
+const requestedCount = Number(new URLSearchParams(location.search).get('rows'));
+const count = [1000, 10000, 50000].includes(requestedCount) ? requestedCount : 10000;
+const data = createRecords(count);
+const table = useTable({
+  features: tableFeatures({ rowSelectionFeature }),
+  data,
+  columns: [{ accessorKey: 'id' }, { accessorKey: 'name' }, { accessorKey: 'amount' }],
+  getRowId: (row) => row.id,
+});
+const start = performance.now();
+const rows = table.getRowModel().rows;
+const modelMs = performance.now() - start;
+const viewport = useTemplateRef<HTMLDivElement>('viewport');
+const visible = shallowRef<VirtualItem[]>([]);
+const total = ref(0);
+const renderMs = ref(0);
+const measuring = performance.now();
+const virtualizer = new Virtualizer<HTMLDivElement, HTMLTableRowElement>({
+  count: rows.length,
+  getScrollElement: () => viewport.value,
+  getItemKey: (index) => rows[index].id,
+  estimateSize: () => 40,
+  overscan: 6,
+  observeElementRect,
+  observeElementOffset,
+  scrollToFn: elementScroll,
+  onChange(instance) {
+    visible.value = instance.getVirtualItems();
+    total.value = instance.getTotalSize();
+  },
+});
+// These are Virtual Core's exported adapter lifecycle hooks, also used by its official adapters.
+onMounted(() => {
+  const dispose = virtualizer._didMount();
+  virtualizer._willUpdate();
+  visible.value = virtualizer.getVirtualItems();
+  total.value = virtualizer.getTotalSize();
+  renderMs.value = performance.now() - measuring;
+  cleanup = dispose;
+});
+let cleanup: (() => void) | undefined;
+onScopeDispose(() => cleanup?.());
+const top = computed(() => visible.value[0]?.start ?? 0);
+const bottom = computed(() => Math.max(0, total.value - (visible.value.at(-1)?.end ?? 0)));
+</script>
+<template>
+  <section class="space-y-4">
+    <h2 class="text-xl font-semibold">
+      {{ rows.length.toLocaleString('en-US') }} rows, a small DOM
+    </h2>
+    <p class="text-sm text-muted-foreground">
+      TanStack Virtual Core controls the visible range. This fixed-height, read-focused view has
+      native table semantics; use the paginated examples for full assistive-technology traversal.
+    </p>
+    <div class="flex flex-wrap items-center gap-3 text-xs">
+      <Button
+        variant="outline"
+        size="sm"
+        @click="virtualizer.scrollToIndex(Math.floor(rows.length / 2), { align: 'start' })"
+        >Jump to middle row</Button
+      ><output data-metric="model">Row model: {{ modelMs.toFixed(2) }} ms</output
+      ><output data-metric="mount">Mount: {{ renderMs.toFixed(2) }} ms</output
+      ><output data-metric="dom"
+        >{{ visible.length }} rendered rows / {{ rows.length }} total</output
+      >
+    </div>
+    <div
+      ref="viewport"
+      role="region"
+      aria-label="Virtualized invoices"
+      tabindex="0"
+      class="h-[440px] overflow-auto rounded-lg border outline-none focus-visible:ring-2 focus-visible:ring-ring"
+    >
+      <table class="w-full border-collapse text-sm" :aria-rowcount="rows.length + 1">
+        <caption class="sr-only">
+          {{
+            rows.length.toLocaleString('en-US')
+          }}
+          invoices, virtualized
+        </caption>
+        <thead class="sticky top-0 z-10 bg-muted">
+          <tr aria-rowindex="1">
+            <th scope="col" class="h-10 px-4 text-left">Select</th>
+            <th scope="col" class="px-4 text-left">Invoice</th>
+            <th scope="col" class="px-4 text-left">Customer</th>
+            <th scope="col" class="px-4 text-right">Amount</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr aria-hidden="true" role="presentation">
+            <td colspan="4" :style="{ height: top + 'px', padding: 0, border: 0 }" />
+          </tr>
+          <tr
+            v-for="item in visible"
+            :key="String(item.key)"
+            :aria-rowindex="item.index + 2"
+            :data-virtual-row="item.index"
+            class="h-10 border-b hover:bg-muted/50"
+          >
+            <td class="px-4">
+              <Checkbox
+                :model-value="rows[item.index].getIsSelected()"
+                :aria-label="'Select ' + rows[item.index].original.id"
+                @update:model-value="rows[item.index].toggleSelected($event)"
+              />
+            </td>
+            <td class="px-4 font-mono text-xs">{{ rows[item.index].original.id }}</td>
+            <td class="px-4">{{ rows[item.index].original.name }}</td>
+            <td class="px-4 text-right font-mono text-xs">
+              {{ rows[item.index].original.amount.toFixed(2) }}
+            </td>
+          </tr>
+          <tr aria-hidden="true" role="presentation">
+            <td colspan="4" :style="{ height: bottom + 'px', padding: 0, border: 0 }" />
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+</template>

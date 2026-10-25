@@ -1,0 +1,22 @@
+<script setup lang="ts">
+import { useTable, useTableAtom } from '@usevibejs/table';
+import DataTable from './components/ui/DataTable.vibe';
+import DataTablePagination from './components/ui/DataTablePagination.vibe';
+import { features, columns } from './shared.ts';
+import { records } from './records.ts';
+const pagination = useTableAtom({ pageIndex: 0, pageSize: 10 });
+const table = useTable({ features, data: records, columns, atoms: { pagination } });
+</script>
+<template>
+  <section class="space-y-4">
+    <h2 class="text-xl font-semibold">Invoices</h2>
+    <p class="text-sm text-muted-foreground">
+      Pagination is owned by a native Vibe atom shared with the application.
+    </p>
+    <DataTable :table="table" caption="Paginated invoices" /><DataTablePagination
+      :table="table"
+    /><output class="font-mono text-xs text-muted-foreground">{{
+      JSON.stringify(pagination.get())
+    }}</output>
+  </section>
+</template>

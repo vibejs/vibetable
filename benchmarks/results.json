@@ -1,0 +1,30 @@
+{
+  "measuredAt": "2026-10-25T21:20:09.211Z",
+  "node": "v24.22.1",
+  "platform": "darwin",
+  "architecture": "arm64",
+  "methodology": "Five samples after two warmups; medians. No DOM. Data allocation excluded; cold model reads measured separately.",
+  "results": [
+    {
+      "count": 1000,
+      "coreMs": 0.659,
+      "sortMs": 1.674,
+      "filterMs": 1.367,
+      "cached1000ReadsMs": 0.331
+    },
+    {
+      "count": 10000,
+      "coreMs": 4,
+      "sortMs": 19.355,
+      "filterMs": 9.684,
+      "cached1000ReadsMs": 0.296
+    },
+    {
+      "count": 50000,
+      "coreMs": 38.943,
+      "sortMs": 189.587,
+      "filterMs": 128.351,
+      "cached1000ReadsMs": 0.483
+    }
+  ]
+}

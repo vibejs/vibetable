@@ -1,0 +1,15 @@
+<script setup lang="ts">
+import type { HeaderContext } from '@usevibejs/table';
+import type { Payment, PaymentFeatures } from './model.ts';
+import Checkbox from '@/components/ui/Checkbox.vibe';
+const { context } = defineProps<{ context: HeaderContext<PaymentFeatures, Payment, unknown> }>();
+</script>
+<template>
+  <Checkbox
+    :model-value="context.table.getIsAllPageRowsSelected()"
+    :indeterminate="context.table.getIsSomePageRowsSelected()"
+    :disabled="!context.table.getRowModel().rows.length"
+    aria-label="Select all payments on this page"
+    @update:model-value="context.table.toggleAllPageRowsSelected($event)"
+  />
+</template>

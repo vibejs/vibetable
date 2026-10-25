@@ -1,0 +1,72 @@
+<script setup lang="ts">
+import { computed } from '@usevibejs/ui';
+import type { DataTableInstance } from '../../lib/data-table.ts';
+import Button from './Button.vibe';
+const { table, pageSizes = [10, 20, 30, 50, 100] } = defineProps<{
+  table: DataTableInstance;
+  pageSizes?: number[];
+}>();
+const pagination = computed(() => table.atoms.pagination?.get() ?? { pageIndex: 0, pageSize: 10 });
+const pages = computed(() => table.getPageCount?.() ?? 1);
+</script>
+<template>
+  <nav
+    data-slot="data-table-pagination"
+    aria-label="Table pagination"
+    class="flex flex-wrap items-center justify-between gap-4 px-1 py-1 text-sm"
+  >
+    <p role="status" aria-live="polite" class="text-muted-foreground">
+      {{ table.getFilteredSelectedRowModel?.().rows.length ?? 0 }} selected<span
+        v-if="table.getRowCount"
+      >
+        · {{ table.getRowCount() }} records</span
+      >
+    </p>
+    <div class="flex flex-wrap items-center gap-4 sm:gap-6">
+      <label class="flex items-center gap-2 text-xs font-medium"
+        >Rows per page<select
+          :value="pagination.pageSize"
+          class="h-8 rounded-md border border-input bg-background px-2 text-sm outline-none focus-visible:ring-2 focus-visible:ring-ring"
+          @change="table.setPageSize?.(Number(($event.target as HTMLSelectElement).value))"
+        >
+          <option v-for="size in pageSizes" :key="size" :value="size">{{ size }}</option>
+        </select></label
+      >
+      <span class="min-w-24 text-center text-xs font-medium tabular-nums" aria-live="polite"
+        >Page {{ pages === 0 ? 0 : pagination.pageIndex + 1
+        }}<template v-if="pages >= 0"> of {{ pages }}</template></span
+      >
+      <div class="flex items-center gap-1">
+        <Button
+          variant="outline"
+          size="icon-sm"
+          aria-label="First page"
+          :disabled="!table.getCanPreviousPage?.()"
+          @click="table.setPageIndex?.(0)"
+          >«</Button
+        ><Button
+          variant="outline"
+          size="icon-sm"
+          aria-label="Previous page"
+          :disabled="!table.getCanPreviousPage?.()"
+          @click="table.previousPage?.()"
+          >‹</Button
+        ><Button
+          variant="outline"
+          size="icon-sm"
+          aria-label="Next page"
+          :disabled="!table.getCanNextPage?.()"
+          @click="table.nextPage?.()"
+          >›</Button
+        ><Button
+          variant="outline"
+          size="icon-sm"
+          aria-label="Last page"
+          :disabled="pages < 0 || !table.getCanLastPage?.()"
+          @click="table.setPageIndex?.(Math.max(0, pages - 1))"
+          >»</Button
+        >
+      </div>
+    </div>
+  </nav>
+</template>

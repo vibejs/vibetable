@@ -1,0 +1,14 @@
+<script setup lang="ts">
+import type { CellContext } from '@usevibejs/table';
+import type { Payment, PaymentFeatures } from './model.ts';
+import Checkbox from '@/components/ui/Checkbox.vibe';
+const { context } = defineProps<{ context: CellContext<PaymentFeatures, Payment, unknown> }>();
+</script>
+<template>
+  <Checkbox
+    :model-value="context.row.getIsSelected()"
+    :disabled="!context.row.getCanSelect()"
+    :aria-label="'Select ' + context.row.original.email"
+    @update:model-value="context.row.toggleSelected($event)"
+  />
+</template>

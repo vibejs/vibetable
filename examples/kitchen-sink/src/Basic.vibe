@@ -1,0 +1,24 @@
+<script setup lang="ts">
+import { tableFeatures, useTable } from '@usevibejs/table';
+import DataTable from './components/ui/DataTable.vibe';
+const table = useTable({
+  features: tableFeatures({}),
+  data: [
+    { name: 'Ada Lovelace', role: 'Engineer' },
+    { name: 'Grace Hopper', role: 'Admiral' },
+  ],
+  columns: [
+    { accessorKey: 'name', header: 'Name' },
+    { accessorKey: 'role', header: 'Role' },
+  ],
+});
+</script>
+<template>
+  <section class="space-y-4">
+    <h2 class="text-xl font-semibold">A table, with nothing extra</h2>
+    <p class="text-sm text-muted-foreground">
+      Two typed columns. Real table semantics. Only the features you register.
+    </p>
+    <DataTable :table="table" caption="Pioneers of computing" />
+  </section>
+</template>

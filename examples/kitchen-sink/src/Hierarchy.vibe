@@ -1,0 +1,29 @@
+<script setup lang="ts">
+import { componentRenderer, useTable } from '@usevibejs/table';
+import DataTable from './components/ui/DataTable.vibe';
+import Button from './components/ui/Button.vibe';
+import ExpandCell from './ExpandCell.vibe';
+import { features, helper } from './shared.ts';
+import { records } from './records.ts';
+const table = useTable({
+  features,
+  data: [
+    { ...records[0], name: 'Engineering', children: records.slice(1, 4) },
+    { ...records[4], name: 'Design', children: records.slice(5, 8) },
+  ],
+  columns: helper.columns([
+    helper.accessor('name', { header: 'Team / member', cell: componentRenderer(ExpandCell) }),
+    helper.accessor('amount', { header: 'Budget', aggregationFn: 'sum' }),
+  ]),
+  getSubRows: (row) => row.children,
+  getRowId: (row) => row.id,
+});
+</script>
+<template>
+  <section class="space-y-4">
+    <h2 class="text-xl font-semibold">Teams and members</h2>
+    <Button variant="outline" size="sm" @click="table.toggleAllRowsExpanded()"
+      >Toggle all teams</Button
+    ><DataTable :table="table" caption="Expandable teams and their members" />
+  </section>
+</template>

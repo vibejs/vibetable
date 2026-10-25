@@ -1,0 +1,12 @@
+<!-- Adapted from shadcn/ui under MIT. See vibecn.LICENSE. -->
+<script setup lang="ts">
+import { provide } from '@usevibejs/ui';
+
+const model = defineModel<string>({ default: () => '' });
+defineSlots<{ default?: (props: {}) => unknown }>();
+provide(Symbol.for('vibecn.menu-radio-group'), model);
+</script>
+
+<template>
+  <div role="group" data-slot="dropdown-menu-radio-group"><slot /></div>
+</template>

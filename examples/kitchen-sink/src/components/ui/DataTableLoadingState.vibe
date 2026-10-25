@@ -1,0 +1,20 @@
+<script setup lang="ts">
+import type { ClassValue } from '@usevibejs/ui';
+import { cn } from '../../lib/utils.ts';
+import TableRow from './TableRow.vibe';
+import TableCell from './TableCell.vibe';
+import Skeleton from './Skeleton.vibe';
+defineOptions({ inheritAttrs: false });
+const {
+  columns,
+  rows = 5,
+  class: className,
+} = defineProps<{ columns: number; rows?: number; class?: ClassValue }>();
+</script>
+<template>
+  <TableRow v-for="index in rows" :key="index" :class="cn(className)"
+    ><TableCell v-for="column in Math.max(1, columns)" :key="column" class="h-14"
+      ><span v-if="index === 1 && column === 1" role="status" class="sr-only">Loading records</span
+      ><Skeleton class="h-4 w-3/4" /></TableCell
+  ></TableRow>
+</template>

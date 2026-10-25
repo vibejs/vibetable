@@ -1,0 +1,40 @@
+<script setup lang="ts">
+import type { DataTableInstance } from '../../lib/data-table.ts';
+import DropdownMenu from './DropdownMenu.vibe';
+import DropdownMenuTrigger from './DropdownMenuTrigger.vibe';
+import DropdownMenuContent from './DropdownMenuContent.vibe';
+import DropdownMenuCheckboxItem from './DropdownMenuCheckboxItem.vibe';
+import DropdownMenuLabel from './DropdownMenuLabel.vibe';
+import DropdownMenuSeparator from './DropdownMenuSeparator.vibe';
+const { table } = defineProps<{ table: DataTableInstance }>();
+</script>
+<template>
+  <DropdownMenu
+    ><DropdownMenuTrigger variant="outline" size="sm" class="ml-auto gap-2"
+      ><svg
+        class="size-3.5"
+        viewBox="0 0 16 16"
+        fill="none"
+        stroke="currentColor"
+        aria-hidden="true"
+      >
+        <rect x="2" y="3" width="12" height="10" rx="1.5" />
+        <path d="M6 3v10M10 3v10" /></svg
+      >View</DropdownMenuTrigger
+    ><DropdownMenuContent align="end" aria-label="Visible columns"
+      ><DropdownMenuLabel>Toggle columns</DropdownMenuLabel><DropdownMenuSeparator /><template
+        v-for="column in table.getAllLeafColumns()"
+        :key="column.id"
+        ><DropdownMenuCheckboxItem
+          v-if="column.getCanHide?.()"
+          :checked="column.getIsVisible?.() ?? true"
+          @update:checked="column.toggleVisibility?.($event)"
+          @select="$event.preventDefault()"
+          >{{
+            typeof column.columnDef.header === 'string' ? column.columnDef.header : column.id
+          }}</DropdownMenuCheckboxItem
+        ></template
+      ></DropdownMenuContent
+    ></DropdownMenu
+  >
+</template>
