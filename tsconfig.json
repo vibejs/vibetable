@@ -11,6 +11,14 @@
     "noEmit": true,
     "types": ["node"]
   },
-  "include": ["src", "benchmarks", "*.config.ts"],
-  "exclude": ["src/**/*.vibe.test.ts"]
+  "include": [
+    "src",
+    "benchmarks",
+    "*.config.ts",
+    "test",
+    "scripts",
+    "examples/*/server.ts",
+    "examples/*/vite.config.ts"
+  ],
+  "exclude": ["src/**/*.vibe.test.ts", "test/**/*.vibe.test.ts", "test/hmr/main.ts", "test/.tmp"]
 }

@@ -1,0 +1,13 @@
+<!-- Adapted from shadcn/ui under MIT. See vibecn.LICENSE. -->
+<script setup lang="ts">
+import { injectMenu, provideMenu, useSubmenu } from '../../lib/menu.ts';
+
+const open = defineModel<boolean>('open', { default: () => false });
+defineSlots<{ default?: (props: {}) => unknown }>();
+const parent = injectMenu();
+useSubmenu(open, provideMenu(open, { parent }));
+</script>
+
+<template>
+  <slot />
+</template>

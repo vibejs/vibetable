@@ -1,0 +1,31 @@
+<script setup lang="ts">
+import DropdownMenu from './DropdownMenu.vibe';
+import DropdownMenuTrigger from './DropdownMenuTrigger.vibe';
+import DropdownMenuContent from './DropdownMenuContent.vibe';
+import DropdownMenuItem from './DropdownMenuItem.vibe';
+const { label, actions } = defineProps<{
+  label: string;
+  actions: readonly {
+    label: string;
+    onSelect: () => void;
+    disabled?: boolean;
+    destructive?: boolean;
+  }[];
+}>();
+</script>
+<template>
+  <DropdownMenu
+    ><DropdownMenuTrigger variant="ghost" size="icon-sm" :aria-label="label"
+      ><span aria-hidden="true">···</span></DropdownMenuTrigger
+    ><DropdownMenuContent align="end" :aria-label="label"
+      ><DropdownMenuItem
+        v-for="action in actions"
+        :key="action.label"
+        :disabled="action.disabled"
+        :variant="action.destructive ? 'destructive' : 'default'"
+        @select="action.onSelect()"
+        >{{ action.label }}</DropdownMenuItem
+      ></DropdownMenuContent
+    ></DropdownMenu
+  >
+</template>

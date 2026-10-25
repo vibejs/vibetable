@@ -1,0 +1,19 @@
+<!-- Adapted from shadcn/ui under MIT. See vibecn.LICENSE. -->
+<script setup lang="ts">
+import type { ClassValue } from '@usevibejs/ui';
+import { cn } from '../../lib/utils.ts';
+
+defineOptions({ inheritAttrs: false });
+
+const { class: className } = defineProps<{
+  class?: ClassValue;
+  colspan?: number;
+  rowspan?: number;
+  scope?: 'row' | 'col' | 'rowgroup' | 'colgroup';
+}>();
+defineSlots<{ default?: (props: {}) => unknown }>();
+</script>
+
+<template>
+  <th data-slot="table-head" v-bind="$attrs" :colspan="$props.colspan" :rowspan="$props.rowspan" :scope="$props.scope" :class="cn('h-10 px-2 text-left align-middle font-medium whitespace-nowrap text-foreground [&:has([role=checkbox])]:pr-0 [&>[role=checkbox]]:translate-y-[2px]', className)"><slot /></th>
+</template>

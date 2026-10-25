@@ -1,0 +1,49 @@
+<script setup lang="ts">
+import { componentRenderer, useTable } from '../../src/index.ts';
+import Content from './Content.vibe';
+import AmountCell from './AmountCell.vibe';
+import NameHeader from './NameHeader.vibe';
+import { features, helper } from './types.ts';
+import type { Item } from './types.ts';
+const props = defineProps<{ data: Item[] }>();
+const columns = helper.columns([
+  helper.accessor('name', { header: componentRenderer(NameHeader), sortFn: 'text' }),
+  helper.accessor('amount', { header: 'Amount', cell: componentRenderer(AmountCell) }),
+]);
+const table = useTable({ features, data: () => props.data, columns, getRowId: (row) => row.id });
+const emit = defineEmits<{ ready: [table: typeof table] }>();
+emit('ready', table);
+</script>
+<template>
+  <table>
+    <caption>
+      Customer payments
+    </caption>
+    <thead>
+      <tr v-for="group in table.getHeaderGroups()" :key="group.id">
+        <th v-for="header in group.headers" :key="header.id" scope="col" :colspan="header.colSpan">
+          <Content
+            v-if="!header.isPlaceholder"
+            :template="header.column.columnDef.header"
+            :context="header.getContext()"
+          />
+        </th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr v-for="row in table.getRowModel().rows" :key="row.id" :data-row="row.id">
+        <td>
+          <input
+            type="checkbox"
+            :aria-label="'Select ' + row.original.name"
+            :checked="row.getIsSelected()"
+            @change="row.toggleSelected(($event.target as HTMLInputElement).checked)"
+          />
+        </td>
+        <td v-for="cell in row.getAllCells()" :key="cell.id">
+          <Content :template="cell.column.columnDef.cell" :context="cell.getContext()" />
+        </td>
+      </tr>
+    </tbody>
+  </table>
+</template>

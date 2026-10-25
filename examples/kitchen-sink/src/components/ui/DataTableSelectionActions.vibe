@@ -1,0 +1,25 @@
+<script setup lang="ts">
+import type { DataTableInstance } from '../../lib/data-table.ts';
+import Button from './Button.vibe';
+const { table } = defineProps<{ table: DataTableInstance }>();
+defineSlots<{ default?: (props: { count: number }) => unknown }>();
+</script>
+<template>
+  <div
+    data-slot="data-table-selection-actions"
+    v-if="table.getSelectedRowIds?.().length"
+    role="group"
+    aria-label="Selected row actions"
+    class="flex flex-wrap items-center gap-3 rounded-lg border bg-muted/50 px-4 py-2"
+  >
+    <p role="status" class="mr-auto text-sm font-medium tabular-nums">
+      {{ table.getSelectedRowIds?.().length }} selected
+    </p>
+    <slot :count="table.getSelectedRowIds?.().length ?? 0" /><Button
+      variant="ghost"
+      size="sm"
+      @click="table.resetRowSelection?.()"
+      >Clear selection</Button
+    >
+  </div>
+</template>

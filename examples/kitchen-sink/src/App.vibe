@@ -1,0 +1,70 @@
+<script setup lang="ts">
+import { computed, ref } from '@usevibejs/ui';
+import Basic from './Basic.vibe';
+import Payments from './Payments.vibe';
+import Customers from './Customers.vibe';
+import Products from './Products.vibe';
+import Invoices from './Invoices.vibe';
+import Selection from './Selection.vibe';
+import Columns from './Columns.vibe';
+import Server from './Server.vibe';
+import Hierarchy from './Hierarchy.vibe';
+import Virtualized from './Virtualized.vibe';
+const examples = [
+  { id: 'basic', label: 'Basic table', component: Basic },
+  { id: 'payments', label: 'Payments dashboard', component: Payments },
+  { id: 'customers', label: 'Sortable customers', component: Customers },
+  { id: 'products', label: 'Product filters', component: Products },
+  { id: 'invoices', label: 'Paginated invoices', component: Invoices },
+  { id: 'selection', label: 'Bulk actions', component: Selection },
+  { id: 'columns', label: 'Column layout', component: Columns },
+  { id: 'server', label: 'Server-side table', component: Server },
+  { id: 'hierarchy', label: 'Expandable rows', component: Hierarchy },
+  { id: 'virtualized', label: 'Virtualized table', component: Virtualized },
+];
+const selected = ref(new URLSearchParams(location.search).get('example') ?? 'basic');
+const current = computed(
+  () => examples.find((example) => example.id === selected.value) ?? examples[0],
+);
+const dark = ref(false);
+</script>
+<template>
+  <div :class="['min-h-screen bg-background text-foreground', dark && 'dark']">
+    <header class="border-b bg-background px-5 py-4">
+      <div class="mx-auto flex max-w-6xl items-center justify-between">
+        <a href="/" class="flex items-baseline gap-3 text-lg font-semibold tracking-tight"
+          >VibeTable<span
+            class="font-mono text-[10px] font-normal tracking-normal text-muted-foreground"
+            >EXAMPLES / 0.1</span
+          ></a
+        ><button
+          type="button"
+          class="rounded border px-3 py-1.5 text-xs hover:bg-accent focus-visible:ring-2 focus-visible:ring-ring"
+          @click="dark = !dark"
+        >
+          {{ dark ? 'Light mode' : 'Dark mode' }}
+        </button>
+      </div>
+    </header>
+    <div class="mx-auto grid max-w-6xl gap-8 px-5 py-8 md:grid-cols-[180px_minmax(0,1fr)]">
+      <nav aria-label="Examples" class="flex gap-1 overflow-x-auto md:flex-col">
+        <button
+          v-for="example in examples"
+          :key="example.id"
+          type="button"
+          :aria-current="selected === example.id ? 'page' : undefined"
+          :class="[
+            'whitespace-nowrap rounded-md px-3 py-2 text-left text-sm outline-none focus-visible:ring-2 focus-visible:ring-ring',
+            selected === example.id
+              ? 'bg-accent font-medium'
+              : 'text-muted-foreground hover:bg-accent/50',
+          ]"
+          @click="selected = example.id"
+        >
+          {{ example.label }}
+        </button>
+      </nav>
+      <main class="min-w-0"><component :is="current.component" /></main>
+    </div>
+  </div>
+</template>

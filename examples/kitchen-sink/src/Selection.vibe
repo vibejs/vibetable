@@ -1,0 +1,47 @@
+<script setup lang="ts">
+import { shallowRef } from '@usevibejs/ui';
+import { componentRenderer, useTable } from '@usevibejs/table';
+import DataTable from './components/ui/DataTable.vibe';
+import DataTableSelectionActions from './components/ui/DataTableSelectionActions.vibe';
+import DataTablePagination from './components/ui/DataTablePagination.vibe';
+import Button from './components/ui/Button.vibe';
+import RecordSelectionCell from './RecordSelectionCell.vibe';
+import { features, helper, columns } from './shared.ts';
+import { records } from './records.ts';
+const data = shallowRef(records);
+const table = useTable({
+  features,
+  data,
+  columns: helper.columns([
+    helper.display({
+      id: 'select',
+      header: 'Select',
+      enableSorting: false,
+      enableHiding: false,
+      cell: componentRenderer(RecordSelectionCell),
+    }),
+    ...columns,
+  ]),
+  getRowId: (row) => row.id,
+  initialState: { pagination: { pageIndex: 0, pageSize: 10 } },
+});
+function archive(): void {
+  const selected = table.getSelectedRowIds();
+  data.value = data.value.filter((row) => !selected.includes(row.id));
+  table.resetRowSelection();
+}
+</script>
+<template>
+  <section class="space-y-4">
+    <h2 class="text-xl font-semibold">Selection and bulk actions</h2>
+    <Button variant="outline" size="sm" @click="table.toggleAllPageRowsSelected()"
+      >Toggle current page</Button
+    ><DataTableSelectionActions :table="table"
+      ><Button variant="outline" size="sm" @click="archive"
+        >Archive selected</Button
+      ></DataTableSelectionActions
+    ><DataTable :table="table" caption="Select invoices to archive" /><DataTablePagination
+      :table="table"
+    />
+  </section>
+</template>

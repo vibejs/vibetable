@@ -1,0 +1,32 @@
+<script setup lang="ts">
+import { useTable } from '@usevibejs/table';
+import DataTable from './components/ui/DataTable.vibe';
+import Button from './components/ui/Button.vibe';
+import { features, columns } from './shared.ts';
+import { records } from './records.ts';
+const table = useTable({
+  features,
+  data: records.slice(0, 8),
+  columns,
+  initialState: { sorting: [{ id: 'name', desc: false }] },
+});
+</script>
+<template>
+  <section class="space-y-4">
+    <h2 class="text-xl font-semibold">Customers</h2>
+    <p class="text-sm text-muted-foreground">
+      Open a column menu to sort. Apply the preset to sort by category, then customer.
+    </p>
+    <Button
+      variant="outline"
+      size="sm"
+      @click="
+        table.setSorting([
+          { id: 'category', desc: false },
+          { id: 'name', desc: false },
+        ])
+      "
+      >Sort category, then customer</Button
+    ><DataTable :table="table" caption="Sortable customers" />
+  </section>
+</template>

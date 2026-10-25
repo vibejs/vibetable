@@ -1,0 +1,8 @@
+<script setup lang="ts">
+import type { CellContext } from '../../src/index.ts';
+import type { Features, Item } from './types.ts';
+const { context } = defineProps<{ context: CellContext<Features, Item, number> }>();
+</script>
+<template>
+  <strong :data-selected="context.row.getIsSelected()">{{ context.getValue().toFixed(2) }}</strong>
+</template>

@@ -1,0 +1,27 @@
+{
+  "name": "vibetable-examples",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "vite --host 127.0.0.1",
+    "build": "vite build",
+    "typecheck": "tsc -b --runExternalCode"
+  },
+  "dependencies": {
+    "@fontsource-variable/geist": "catalog:",
+    "@fontsource-variable/geist-mono": "catalog:",
+    "@tanstack/virtual-core": "catalog:",
+    "@usevibejs/table": "workspace:*",
+    "@usevibejs/ui": "catalog:",
+    "clsx": "catalog:",
+    "tailwind-merge": "catalog:"
+  },
+  "devDependencies": {
+    "@tailwindcss/vite": "catalog:",
+    "@usevibejs/compiler": "catalog:",
+    "@usevibejs/language-tools": "catalog:",
+    "tailwindcss": "catalog:",
+    "typescript": "catalog:ts-next",
+    "vite": "catalog:"
+  }
+}

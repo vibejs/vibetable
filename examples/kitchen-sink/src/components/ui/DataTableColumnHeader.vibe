@@ -1,0 +1,35 @@
+<script setup lang="ts">
+import type { DataTableColumn } from '../../lib/data-table.ts';
+import DropdownMenu from './DropdownMenu.vibe';
+import DropdownMenuTrigger from './DropdownMenuTrigger.vibe';
+import DropdownMenuContent from './DropdownMenuContent.vibe';
+import DropdownMenuItem from './DropdownMenuItem.vibe';
+import DropdownMenuSeparator from './DropdownMenuSeparator.vibe';
+const { column, title } = defineProps<{ column: DataTableColumn; title: string }>();
+</script>
+<template>
+  <DropdownMenu v-if="column.getCanSort?.()">
+    <DropdownMenuTrigger
+      variant="ghost"
+      size="sm"
+      class="-ml-2.5 h-8 gap-2 font-medium"
+      :aria-label="'Sort ' + title"
+      >{{ title
+      }}<span aria-hidden="true" class="text-muted-foreground">{{
+        column.getIsSorted?.() === 'asc' ? '↑' : column.getIsSorted?.() === 'desc' ? '↓' : '↕'
+      }}</span></DropdownMenuTrigger
+    >
+    <DropdownMenuContent align="start" :aria-label="'Options for ' + title">
+      <DropdownMenuItem @select="column.toggleSorting?.(false)">Sort ascending</DropdownMenuItem>
+      <DropdownMenuItem @select="column.toggleSorting?.(true)">Sort descending</DropdownMenuItem>
+      <DropdownMenuItem v-if="column.getIsSorted?.()" @select="column.clearSorting?.()"
+        >Clear sorting</DropdownMenuItem
+      >
+      <DropdownMenuSeparator v-if="column.getCanHide?.()" />
+      <DropdownMenuItem v-if="column.getCanHide?.()" @select="column.toggleVisibility?.(false)"
+        >Hide column</DropdownMenuItem
+      >
+    </DropdownMenuContent>
+  </DropdownMenu>
+  <span v-else>{{ title }}</span>
+</template>

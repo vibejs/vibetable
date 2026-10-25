@@ -1,0 +1,28 @@
+<script setup lang="ts">
+import type { CellContext } from '@usevibejs/table';
+import type { Payment, PaymentFeatures } from './model.ts';
+import DataTableRowActions from '@/components/ui/DataTableRowActions.vibe';
+const { context } = defineProps<{ context: CellContext<PaymentFeatures, Payment, unknown> }>();
+</script>
+<template>
+  <DataTableRowActions
+    :label="'Actions for ' + context.row.original.id"
+    :actions="[
+      {
+        label: 'Mark as paid',
+        disabled: context.row.original.status === 'Paid',
+        onSelect: () => context.table.options.meta?.markPaid(context.row.id),
+      },
+      {
+        label: 'Refund payment',
+        disabled: context.row.original.status !== 'Paid',
+        onSelect: () => context.table.options.meta?.refund(context.row.id),
+      },
+      {
+        label: 'Remove payment',
+        destructive: true,
+        onSelect: () => context.table.options.meta?.remove(context.row.id),
+      },
+    ]"
+  />
+</template>

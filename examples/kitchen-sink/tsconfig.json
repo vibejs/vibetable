@@ -1,0 +1,23 @@
+{
+  "compilerOptions": {
+    "target": "es2022",
+    "lib": ["es2024", "dom"],
+    "module": "preserve",
+    "strict": true,
+    "verbatimModuleSyntax": true,
+    "allowImportingTsExtensions": true,
+    "skipLibCheck": true,
+    "noEmit": true,
+    "types": ["vite/client"],
+    "paths": {
+      "@/*": ["./src/*"]
+    }
+  },
+  "contentMappers": [
+    {
+      "package": "@usevibejs/language-tools",
+      "extensions": [".vibe"]
+    }
+  ],
+  "include": ["src", "../../test/fixtures", "../../test/*.vibe.test.ts"]
+}

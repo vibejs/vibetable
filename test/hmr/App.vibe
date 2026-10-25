@@ -1,0 +1,24 @@
+<script setup lang="ts">
+import { ref } from '@usevibejs/ui';
+import { useTable, tableFeatures, rowSelectionFeature } from '@usevibejs/table';
+const count = ref(1);
+const table = useTable({
+  features: tableFeatures({ rowSelectionFeature }),
+  data: [{ name: 'Ada' }],
+  columns: [{ accessorKey: 'name' }],
+});
+</script>
+<template>
+  <div>
+    <button
+      type="button"
+      @click="
+        count++;
+        table.getRow('0').toggleSelected();
+      "
+    >
+      {{ count }} / {{ table.getRow('0').getIsSelected() }}
+    </button>
+    <p>Original template</p>
+  </div>
+</template>

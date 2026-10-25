@@ -1,0 +1,93 @@
+<script setup lang="ts">
+import { computed, ref, shallowRef, watch } from '@usevibejs/ui';
+import { useTable, useTableAtom } from '@usevibejs/table';
+import type { SortingState } from '@usevibejs/table';
+import DataTable from './components/ui/DataTable.vibe';
+import DataTableToolbar from './components/ui/DataTableToolbar.vibe';
+import DataTablePagination from './components/ui/DataTablePagination.vibe';
+import Button from './components/ui/Button.vibe';
+import { features, columns } from './shared.ts';
+import type { RecordItem } from './records.ts';
+const data = shallowRef<RecordItem[]>([]);
+const rowCount = ref(0);
+const loading = ref(false);
+const error = ref<string | null>(null);
+const retry = ref(0);
+const pagination = useTableAtom({ pageIndex: 0, pageSize: 10 });
+const sorting = useTableAtom<SortingState>([]);
+const globalFilter = useTableAtom('');
+const table = useTable(() => ({
+  features,
+  data,
+  columns,
+  atoms: { pagination, sorting, globalFilter },
+  manualPagination: true,
+  manualSorting: true,
+  manualFiltering: true,
+  rowCount: rowCount.value,
+  getRowId: (row: RecordItem) => row.id,
+}));
+watch(
+  () => [globalFilter.get(), sorting.get()],
+  () => pagination.set((previous) => ({ ...previous, pageIndex: 0 })),
+  { flush: 'sync' },
+);
+const request = computed(() => {
+  const page = pagination.get();
+  const sort = sorting.get()[0];
+  return new URLSearchParams({
+    page: String(page.pageIndex),
+    size: String(page.pageSize),
+    search: globalFilter.get(),
+    sort: sort?.id ?? 'name',
+    desc: String(sort?.desc ?? false),
+    retry: String(retry.value),
+  }).toString();
+});
+watch(
+  request,
+  async (query, _previous, onCleanup) => {
+    const controller = new AbortController();
+    onCleanup(() => controller.abort());
+    loading.value = true;
+    error.value = null;
+    try {
+      const response = await fetch('/api/invoices?' + query, { signal: controller.signal });
+      if (!response.ok) throw new Error('Request failed');
+      const result: { rows: RecordItem[]; rowCount: number } = await response.json();
+      if (!controller.signal.aborted) {
+        data.value = result.rows;
+        rowCount.value = result.rowCount;
+      }
+    } catch (cause) {
+      if (!controller.signal.aborted)
+        error.value = cause instanceof Error ? cause.message : 'Could not load invoices.';
+    } finally {
+      if (!controller.signal.aborted) loading.value = false;
+    }
+  },
+  { immediate: true },
+);
+</script>
+<template>
+  <section class="space-y-4">
+    <h2 class="text-xl font-semibold">Server-side invoices</h2>
+    <p class="text-sm text-muted-foreground">
+      A real HTTP endpoint serves 1,200 invoices. Sorting, search and pagination run on the server.
+      Superseded requests are cancelled.
+    </p>
+    <DataTableToolbar
+      :table="table"
+      label="Search remote invoices"
+      placeholder="Search remote invoices..."
+    /><DataTable :table="table" caption="Remote invoices" :loading="loading" :error="error"
+      ><template #error
+        ><Button variant="outline" size="sm" @click="retry++">Try again</Button></template
+      ></DataTable
+    ><DataTablePagination :table="table" />
+    <details class="text-xs text-muted-foreground">
+      <summary>Request</summary>
+      <code>/api/invoices?{{ request }}</code>
+    </details>
+  </section>
+</template>

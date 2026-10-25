@@ -1,0 +1,17 @@
+<!-- Adapted from shadcn/ui under MIT. See vibecn.LICENSE. -->
+<script setup lang="ts">
+import type { ClassValue } from '@usevibejs/ui';
+import { cn } from '../../lib/utils.ts';
+
+defineOptions({ inheritAttrs: false });
+
+const { class: className, inset = false } = defineProps<{
+  class?: ClassValue;
+  inset?: boolean;
+}>();
+defineSlots<{ default?: (props: {}) => unknown }>();
+</script>
+
+<template>
+  <div data-slot="dropdown-menu-label" :data-inset="inset || undefined" v-bind="$attrs" :class="cn('px-2 py-1.5 text-sm font-medium data-[inset]:pl-8', className)"><slot /></div>
+</template>

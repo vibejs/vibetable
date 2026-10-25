@@ -1,0 +1,43 @@
+<!-- Adapted from shadcn/ui under MIT. See vibecn.LICENSE. -->
+<script setup lang="ts">
+import { useTemplateRef } from '@usevibejs/ui';
+import type { ClassValue } from '@usevibejs/ui';
+import { injectMenu, useMenuContent } from '../../lib/menu.ts';
+import { cn } from '../../lib/utils.ts';
+
+defineOptions({ inheritAttrs: false });
+
+const {
+  class: className,
+  side = 'bottom',
+  align = 'start',
+  sideOffset = 4,
+  alignOffset = 0,
+} = defineProps<{
+  class?: ClassValue;
+  side?: 'top' | 'right' | 'bottom' | 'left';
+  align?: 'start' | 'center' | 'end';
+  sideOffset?: number;
+  alignOffset?: number;
+}>();
+defineSlots<{ default?: (props: {}) => unknown }>();
+const menu = injectMenu();
+const content = useTemplateRef<HTMLElement>('content');
+const { onToggle, onKeydown, side: placed } = useMenuContent(content, menu, () => ({ side, align, sideOffset, alignOffset }));
+</script>
+
+<template>
+  <div
+    ref="content"
+    role="menu"
+    tabindex="-1"
+    data-slot="dropdown-menu-content"
+    :id="menu.id + '-content'"
+    :data-state="menu.open.value ? 'open' : 'closed'"
+    :data-side="placed"
+    v-bind="{ popover: 'auto', ...$attrs }"
+    :class="cn('min-w-[8rem] overflow-x-hidden overflow-y-auto rounded-md border bg-popover p-1 text-popover-foreground outline-none max-h-[var(--available-height,100vh)] shadow-md fixed inset-auto m-0 transition-[opacity,scale,translate,overlay,display] transition-discrete duration-150 opacity-0 scale-95 open:opacity-100 open:scale-100 starting:open:opacity-0 starting:open:scale-95 data-[side=bottom]:starting:open:-translate-y-2 data-[side=top]:starting:open:translate-y-2 data-[side=left]:starting:open:translate-x-2 data-[side=right]:starting:open:-translate-x-2 motion-reduce:transition-none', className)"
+    @beforetoggle="onToggle"
+    @keydown="onKeydown"
+  ><slot /></div>
+</template>
