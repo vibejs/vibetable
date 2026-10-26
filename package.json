@@ -1,7 +1,7 @@
 {
   "name": "@usevibejs/table",
   "version": "0.1.0",
-  "description": "Powerful headless tables for Vibe.js, powered by TanStack Table Core.",
+  "description": "Headless tables for vibe.js, powered by TanStack Table.",
   "keywords": [
     "datagrid",
     "headless",
