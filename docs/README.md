@@ -1,6 +1,6 @@
 # VibeTable documentation
 
-VibeTable connects TanStack Table v9 to Vibe.js. Register only the features you use, pass reactive options, and render with semantic `.vibe` templates or Vibecn's editable source components.
+VibeTable connects TanStack Table v9 to vibe.js. Register only the features you use, pass reactive options, and render with semantic `.vibe` templates or Vibecn's editable source components.
 
 | Guide                                                           | Covers                                                                  |
 | --------------------------------------------------------------- | ----------------------------------------------------------------------- |

@@ -1,8 +1,8 @@
 # VibeTable
 
-**Powerful Headless Tables for Vibe.js**
+**Headless tables for vibe.js, powered by TanStack Table.**
 
-`@usevibejs/table` is a native, fine-grained [Vibe.js](https://vibejs.org) adapter for **TanStack Table Core v9**. Stable table instances, typed feature registration, reactive options and state atoms, and declarative `.vibe` cells. No DOM renderer, virtual DOM, CSS, React, or Vue dependency.
+`@usevibejs/table` is a native, fine-grained [vibe.js](https://vibejs.org) adapter for **TanStack Table Core v9**. Stable table instances, typed feature registration, reactive options and state atoms, and declarative `.vibe` cells. No DOM renderer, virtual DOM, CSS, React, or Vue dependency.
 
 ## Install
 
@@ -11,7 +11,7 @@ pnpm add @usevibejs/table @usevibejs/ui
 pnpm add -D @usevibejs/compiler @usevibejs/language-tools vite
 ```
 
-`@usevibejs/ui` is a peer dependency. Compiler and UI versions must match; this release is verified against Vibe.js 0.1.0.
+`@usevibejs/ui` is a peer dependency. Compiler and UI versions must match; this release is verified against vibe.js 0.1.0.
 
 ## Quick start
 

@@ -1,6 +1,6 @@
 # Installation and quick start
 
-Use Node ^24.15.0 or >=26, pnpm and a Vibe.js 0.1.0 client application. Install `@usevibejs/table` alongside `@usevibejs/ui`. Use matching versions of `@usevibejs/compiler`, `@usevibejs/language-tools` and UI. Table Core 9.3.1 is an exact runtime dependency; do not override it with v8.
+Use Node ^24.15.0 or >=26, pnpm and a vibe.js 0.1.0 client application. Install `@usevibejs/table` alongside `@usevibejs/ui`. Use matching versions of `@usevibejs/compiler`, `@usevibejs/language-tools` and UI. Table Core 9.3.1 is an exact runtime dependency; do not override it with v8.
 
 ```sh
 pnpm add @usevibejs/table @usevibejs/ui
