@@ -7,3 +7,7 @@ coverage/
 .playwright/
 benchmarks/latest.json
 test/.tmp/
+.local-packs/
+test-results/
+.vitest/
+.pnpm-store/
