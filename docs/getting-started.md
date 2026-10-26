@@ -7,7 +7,7 @@ pnpm add @usevibejs/table @usevibejs/ui
 pnpm add -D @usevibejs/compiler @usevibejs/language-tools vite
 ```
 
-The package has not been published by this implementation. To develop locally, build this repository, run `pnpm pack`, then add the tarball to your application. The packed manifest contains versioned dependencies, with no workspace links. Existing Vibe apps need no extra compiler plugin for the adapter: the ordinary `vibe()` Vite plugin compiles consumer `.vibe` files.
+To try unreleased changes, build this repository, run `pnpm pack`, then add the tarball to your application. The packed manifest contains versioned dependencies, with no workspace links. Existing Vibe apps need no extra compiler plugin for the adapter: the ordinary `vibe()` Vite plugin compiles consumer `.vibe` files.
 
 The README's quick start is a complete `.vibe` component. [Basic.vibe](../examples/kitchen-sink/src/Basic.vibe) demonstrates the same engine with Vibecn's DataTable. Keep `useTable` in setup; it creates the instance once. Read `table.getRowModel()` directly in templates. Vibe tracks the native atoms read beneath those methods.
 

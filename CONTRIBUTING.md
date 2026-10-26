@@ -4,4 +4,4 @@ Use Node ^24.15.0 or >=26 and pnpm 12.14.0. Run `pnpm install && pnpm build` bef
 
 `pnpm dev` opens the examples. `pnpm bench` writes measured row-model results to stdout; browser tests record DOM measurements separately. Do not infer DOM performance from row-model timings.
 
-Use focused branches and Conventional Commits. Never add attribution trailers. Never publish, push, deploy or create remote resources as part of local development. The Vibecn source components are owned in the separate Vibecn repository; update them there and reinstall the source into the example app when changing their API.
+Use focused branches and Conventional Commits. Never add attribution trailers. Add a changeset with `pnpm changeset` for every user-visible change; releases run only through the Release workflow. Never publish, push, deploy or create remote resources as part of local development. The Vibecn source components are owned in the separate Vibecn repository; update them there and reinstall the source into the example app when changing their API.

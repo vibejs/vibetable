@@ -10,7 +10,15 @@
     "typescript",
     "vibejs"
   ],
+  "homepage": "https://github.com/vibejs/vibetable#readme",
+  "bugs": {
+    "url": "https://github.com/vibejs/vibetable/issues"
+  },
   "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/vibejs/vibetable.git"
+  },
   "files": [
     "dist",
     "README.md",
@@ -27,6 +35,9 @@
       "default": "./dist/index.js"
     }
   },
+  "publishConfig": {
+    "access": "public"
+  },
   "scripts": {
     "build": "tsdown",
     "typecheck": "tsc --noEmit && pnpm --dir examples/kitchen-sink typecheck && node scripts/check-docs.ts",
@@ -41,13 +52,15 @@
     "precheck": "pnpm build",
     "build:examples": "pnpm --dir examples/kitchen-sink build",
     "bench:browser": "vitest run --project integration test/browser.integration.test.ts -t 'bounds DOM rows'",
-    "prepack": "pnpm build"
+    "prepack": "pnpm build",
+    "version-packages": "changeset version && pnpm install --lockfile-only"
   },
   "dependencies": {
     "@tanstack/store": "catalog:",
     "@tanstack/table-core": "catalog:"
   },
   "devDependencies": {
+    "@changesets/cli": "catalog:",
     "@types/node": "catalog:",
     "@usevibejs/compiler": "catalog:",
     "@usevibejs/language-tools": "catalog:",
